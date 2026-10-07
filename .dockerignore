@@ -1,0 +1,17 @@
+.venv
+.git
+__pycache__
+*.pyc
+.pytest_cache
+.env
+results/
+data/rico
+data/mobilityui
+data/embeddings
+data/test_holdout
+notebooks/
+tests/
+scripts/
+docs/
+*.md
+!README.md
