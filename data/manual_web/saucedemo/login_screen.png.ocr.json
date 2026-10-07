@@ -1,0 +1,28 @@
+{
+  "regions": [
+    {
+      "text": "Username",
+      "confidence": 0.95,
+      "left": 500,
+      "top": 280,
+      "width": 760,
+      "height": 50
+    },
+    {
+      "text": "Password",
+      "confidence": 0.95,
+      "left": 500,
+      "top": 360,
+      "width": 760,
+      "height": 50
+    },
+    {
+      "text": "Login",
+      "confidence": 0.95,
+      "left": 500,
+      "top": 440,
+      "width": 260,
+      "height": 50
+    }
+  ]
+}

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SpecSnap — Test Case Generator</title>
+  <style>
+    :root {
+      --bg: #0f1419;
+      --surface: #1a2332;
+      --border: #2d3a4f;
+      --text: #e7ecf3;
+      --muted: #8b9cb3;
+      --accent: #3b82f6;
+      --success: #22c55e;
+      --error: #ef4444;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: "Segoe UI", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      min-height: 100vh;
+    }
+    header {
+      padding: 1.5rem 2rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+    }
+    header h1 { margin: 0; font-size: 1.5rem; }
+    header p { margin: 0.25rem 0 0; color: var(--muted); font-size: 0.9rem; }
+    main {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 2rem;
+      display: grid;
+      gap: 1.5rem;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem;
+    }
+    label { display: block; font-size: 0.85rem; color: var(--muted); margin-bottom: 0.35rem; }
+    input[type="text"], textarea, select {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 8px;
+      padding: 0.65rem 0.75rem;
+      font-size: 0.95rem;
+    }
+    textarea { min-height: 72px; resize: vertical; }
+    .row { display: grid; gap: 1rem; }
+    @media (min-width: 640px) { .row-2 { grid-template-columns: 1fr 1fr; } }
+    button {
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 0.75rem 1.25rem;
+      font-size: 1rem;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .preview { max-width: 100%; max-height: 240px; border-radius: 8px; margin-top: 0.5rem; }
+    .status { display: flex; gap: 1rem; flex-wrap: wrap; font-size: 0.9rem; }
+    .badge {
+      padding: 0.25rem 0.6rem;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+    .badge.ok { background: rgba(34,197,94,0.15); color: var(--success); }
+    .badge.fail { background: rgba(239,68,68,0.15); color: var(--error); }
+    pre {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+      overflow: auto;
+      font-size: 0.82rem;
+      line-height: 1.45;
+      max-height: 420px;
+    }
+    .actions { display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center; }
+    #downloadBtn { background: transparent; border: 1px solid var(--border); color: var(--text); }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>SpecSnap</h1>
+    <p>Multimodal AI · Test case generation from UI screenshots · Group 32 · SIT Pune</p>
+  </header>
+  <main>
+    <form id="form" class="card row">
+      <div>
+        <label for="image">UI Screenshot (PNG)</label>
+        <input type="file" id="image" name="image" accept="image/png,image/jpeg" required />
+        <img id="preview" class="preview" alt="" hidden />
+      </div>
+      <div class="row row-2">
+        <div>
+          <label for="objective">Objective</label>
+          <textarea id="objective" name="objective" required placeholder="Verify login with valid credentials"></textarea>
+        </div>
+        <div>
+          <label for="expected">Expected Outcome</label>
+          <textarea id="expected" name="expected_outcome" required placeholder="Inventory page is visible"></textarea>
+        </div>
+      </div>
+      <div>
+        <label for="baseline">Baseline</label>
+        <select id="baseline" name="baseline">
+          <option value="C" selected>C — NL + CLIP (production)</option>
+          <option value="B">B — NL + OCR</option>
+          <option value="A">A — NL only</option>
+          <option value="D">D — NL + BLIP-2</option>
+        </select>
+      </div>
+      <div class="actions">
+        <button type="submit" id="submitBtn">Generate Test Case</button>
+        <span id="latency"></span>
+      </div>
+    </form>
+
+    <section id="result" class="card" hidden>
+      <div class="status" id="status"></div>
+      <pre id="jsonOut"></pre>
+      <div class="actions">
+        <button type="button" id="downloadBtn">Download JSON</button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const form = document.getElementById("form");
+    const preview = document.getElementById("preview");
+    const result = document.getElementById("result");
+    const jsonOut = document.getElementById("jsonOut");
+    const status = document.getElementById("status");
+    const latency = document.getElementById("latency");
+    const submitBtn = document.getElementById("submitBtn");
+    const downloadBtn = document.getElementById("downloadBtn");
+    let lastTestCase = null;
+
+    document.getElementById("image").addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      preview.src = URL.createObjectURL(file);
+      preview.hidden = false;
+    });
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      submitBtn.disabled = true;
+      latency.textContent = "Generating…";
+      result.hidden = false;
+
+      const fd = new FormData(form);
+      try {
+        const res = await fetch("/api/v1/generate", { method: "POST", body: fd });
+        const data = await res.json();
+        lastTestCase = data.test_case;
+        jsonOut.textContent = JSON.stringify(data, null, 2);
+
+        const v = data.validation || {};
+        status.innerHTML = [
+          badge(v.schema_valid, "Schema"),
+          badge(v.grounding_valid, "Grounding"),
+          `<span class="badge ok">${data.metadata?.latency_ms ?? "?"} ms</span>`,
+        ].join("");
+        latency.textContent = "";
+      } catch (err) {
+        jsonOut.textContent = String(err);
+        status.innerHTML = badge(false, "Request failed");
+      } finally {
+        submitBtn.disabled = false;
+      }
+    });
+
+    function badge(ok, label) {
+      return `<span class="badge ${ok ? "ok" : "fail"}">${label}: ${ok ? "PASS" : "FAIL"}</span>`;
+    }
+
+    downloadBtn.addEventListener("click", () => {
+      if (!lastTestCase) return;
+      const blob = new Blob([JSON.stringify(lastTestCase, null, 2)], { type: "application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `${lastTestCase.test_id || "test_case"}.json`;
+      a.click();
+    });
+  </script>
+</body>
+</html>

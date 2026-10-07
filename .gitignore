@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+dist/
+build/
+.venv/
+venv/
+.env
+
+# Data (large / generated)
+data/rico/
+data/mobilityui/
+data/embeddings/*.npy
+data/**/*.png
+!data/manual_web/saucedemo/login_screen.png
+results/*.json
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Playwright
+playwright-report/
+test-results/

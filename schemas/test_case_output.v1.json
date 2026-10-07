@@ -1,0 +1,60 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://specsnap.dev/schemas/test_case_output.v1.json",
+  "title": "SpecSnap Test Case Output",
+  "type": "object",
+  "required": ["test_id", "source_screenshot", "objective", "expected_outcome", "steps"],
+  "additionalProperties": false,
+  "properties": {
+    "test_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_screenshot": {
+      "type": "string",
+      "minLength": 1
+    },
+    "objective": {
+      "type": "string",
+      "minLength": 1
+    },
+    "expected_outcome": {
+      "type": "string",
+      "minLength": 1
+    },
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 8,
+      "items": {
+        "$ref": "#/definitions/step"
+      }
+    }
+  },
+  "definitions": {
+    "step": {
+      "type": "object",
+      "required": ["step_id", "action", "target", "value", "expected"],
+      "additionalProperties": false,
+      "properties": {
+        "step_id": {
+          "type": "string",
+          "pattern": "^s[0-9]+$"
+        },
+        "action": {
+          "type": "string",
+          "enum": ["click", "fill", "select", "assert_text", "assert_url", "goto"]
+        },
+        "target": {
+          "type": ["string", "null"]
+        },
+        "value": {
+          "type": ["string", "null"]
+        },
+        "expected": {
+          "type": ["string", "null"]
+        }
+      }
+    }
+  }
+}

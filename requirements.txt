@@ -1,0 +1,41 @@
+# SpecSnap — Multimodal Test Case Generation
+# Python 3.11+
+
+# Core ML / vision
+torch>=2.1.0
+torchvision>=0.16.0
+transformers>=4.36.0
+pillow>=10.0.0
+numpy>=1.24.0
+scikit-learn>=1.3.0
+
+# OCR
+pytesseract>=0.3.10
+
+# LLM
+groq>=0.4.0
+jinja2>=3.1.0
+
+# Validation & API
+jsonschema>=4.20.0
+pydantic>=2.5.0
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+python-multipart>=0.0.6
+
+# Dataset & eval
+pandas>=2.1.0
+imagehash>=4.3.0
+opencv-python-headless>=4.8.0
+tqdm>=4.66.0
+
+# Optional demo
+playwright>=1.40.0
+
+# Dev / test
+pytest>=7.4.0
+pytest-asyncio>=0.23.0
+httpx>=0.26.0
+jupyter>=1.0.0
+matplotlib>=3.8.0
+seaborn>=0.13.0

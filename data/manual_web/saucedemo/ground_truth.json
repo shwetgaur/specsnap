@@ -1,0 +1,12 @@
+{
+  "sample_id": "manual_web_saucedemo_login_001",
+  "nl_objective": "Verify login with valid credentials",
+  "nl_expected_outcome": "Products inventory page is visible",
+  "steps": [
+    {"step_id": "s1", "action": "goto", "target": "Login page", "value": "https://www.saucedemo.com/", "expected": null},
+    {"step_id": "s2", "action": "fill", "target": "Username", "value": "standard_user", "expected": null},
+    {"step_id": "s3", "action": "fill", "target": "Password", "value": "secret_sauce", "expected": null},
+    {"step_id": "s4", "action": "click", "target": "Login", "value": null, "expected": null},
+    {"step_id": "s5", "action": "assert_text", "target": null, "value": null, "expected": "Products"}
+  ]
+}
